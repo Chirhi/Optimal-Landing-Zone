@@ -19,6 +19,7 @@ Also there is algorithm for finding points for landing based on euclidean distan
 
 - **DeepLabV3+ Model:** Utilizes the DeepLabV3+ architecture with MobileNetV2 as the backbone.
 - **Image Preprocessing:** OpenCV and Albumentations for image resizing, augmentation, and normalization.
+- **Multiple datasets:** Supports including multiple datasets and remapping their classes.
 - **Custom Training Loop:** Includes a custom training loop with mixed precision training using PyTorch's AMP.
 - **Early Stopping:** Implements early stopping to prevent overfitting during training.
 - **Point Finding Algorithm:** Includes a post-processing step to identify the optimal points in segmented regions.
@@ -33,7 +34,7 @@ Also there is algorithm for finding points for landing based on euclidean distan
     ```bash
     pip install -r requirements.txt
 
-3. Prepare your dataset and adjust the paths in main.py accordingly.
+3. Prepare your dataset and adjust the paths and classes in main.py accordingly.
    
 4. Train the model:
     ```bash
@@ -47,16 +48,16 @@ Also there is algorithm for finding points for landing based on euclidean distan
     ```bash
     python main.py --mode points
 
-## Dataset
-The dataset used for this project is **"Semantic Drone Dataset"**. It consists of 400 aerial drone images and their corresponding segmentation masks.
-URL: https://datasetninja.com/semantic-drone
-
-## Model
-The model uses a pretrained DeepLabV3+ architecture with a MobileNetV2 backbone.
+## Datasets
+The datasets used for this project are:
+- **"Semantic Drone Dataset"**. Consists of 400 aerial drone images.
+URL: https://datasetninja.com/semantic-drone.
+- **Swiss Drone and Okutama Drone Datasets**. Consists of 100 aerial drone images.
+URL: https://www.kaggle.com/datasets/aletbm/swiss-drone-and-okutama-drone-datasets
 
 ## Results
 
-![Figure_1](https://github.com/user-attachments/assets/d540e55d-c8f4-403a-92fd-80bb4fe96835)
+![Figure_1](https://github.com/user-attachments/assets/8940eaa7-6166-4e02-a1bc-7ecc1d3143b3)
 
 - Mean Precision: 0.8991
 - Mean Recall: 0.8979
