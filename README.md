@@ -8,9 +8,9 @@ Includes: **.ipynb** and **.py** files.
 ## Project Overview
 The goal of this project is to train a semantic segmentation model that can classify different regions in drone-captured images for uni diploma. 
 
-The model identifies and segments areas like roads, water bodies, landing zones, moving objects, and more.
+The model identifies and segments areas like roads, water, landing zones, markers, moving objects and obstacles.
 
-Also there is algorithm for finding points for landing based on euclidean distance transform (distance_transform_edt). After it calculates score for optimal landing point on these criteria with weights:
+Also there is algorithm for finding points for landing based on euclidean distance transform (distance_transform_edt). After it calculates score for optimal landing point on criteria with weights:
 - Distance from the center of the image or from the bottom part of the image (0.4)
 - Zone size (0.2)
 - Distance from zone borders (0.4)
@@ -23,11 +23,7 @@ Also there is algorithm for finding points for landing based on euclidean distan
 - **Early Stopping:** Implements early stopping to prevent overfitting during training.
 - **Point Finding Algorithm:** Includes a post-processing step to identify the optimal points in segmented regions.
 
-### Stack
-
-`Python`, `PyTorch`, `OpenCV`, `Albumentations`, `Segmentation Models PyTorch`, `scikit-learn`, `Matplotlib`, `tqdm`, `NumPy`, `SciPy`, `Git`
-
-### Setup Instructions on Windows
+## Setup Instructions on Windows
 
 1. Clone the repository:
    ```bash
@@ -51,15 +47,15 @@ Also there is algorithm for finding points for landing based on euclidean distan
     ```bash
     python main.py --mode points
 
-### Dataset
+## Dataset
 The dataset used for this project is **"Semantic Drone Dataset"** and it consists of 400 drone images and their corresponding segmentation masks.
 
 URL: https://datasetninja.com/semantic-drone
 
-### Model
-The model uses a pretrained DeepLabV3+ architecture with a MobileNetV2 backbone. It is trained to segment drone imagery into several classes, including roads, water, landing zones, markers, moving objects and obstacles.
+## Model
+The model uses a pretrained DeepLabV3+ architecture with a MobileNetV2 backbone.
 
-### Results
+## Results
 
 ![Figure_1](https://github.com/user-attachments/assets/d540e55d-c8f4-403a-92fd-80bb4fe96835)
 
