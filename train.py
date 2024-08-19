@@ -1,7 +1,6 @@
 import torch
-from torch.amp import GradScaler, autocast
+from torch.amp import autocast
 from tqdm import tqdm
-from eval import calculate_miou
 
 def train_model(model, train_loader, valid_loader, num_classes, num_epochs, start_epoch, train_losses, val_losses, val_loss_min, device, optimizer, scheduler, scaler, early_stopping, criterion):
     """
@@ -53,14 +52,10 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
                 pbar.update(1)
 
         train_losses.append(running_loss / len(train_loader))
-        # train_miou = calculate_miou(model, train_loader, num_classes)
-        # train_mious.append(train_miou)
 
         # Validate the model
         val_loss = validate_model(model, valid_loader, criterion, device)
         val_losses.append(val_loss)
-        # val_miou = calculate_miou(model, valid_loader, num_classes)
-        # val_mious.append(val_miou)
 
         scheduler.step(val_loss)
 
@@ -69,8 +64,6 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
         if early_stopping.early_stop:
             print("Early stopping")
             break
-
-        torch.save(model.state_dict(), 'checkpoint_weights.pth')
 
     if not early_stopping.early_stop:
         print("Saving final model")

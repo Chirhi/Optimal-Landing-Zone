@@ -14,13 +14,10 @@ class EarlyStopping:
     def __call__(self, val_loss, model, epoch, optimizer, scheduler, scaler, train_losses, val_losses):
         score = -val_loss
 
-        if self.best_score is None:
-            self.best_score = score
-            self.save_checkpoint(val_loss, model, epoch, optimizer, scheduler, scaler, train_losses, val_losses)
-        elif score < self.best_score + self.delta:
+        if score < self.best_score + self.delta:
             self.counter += 1
             if self.verbose:
-                print(f'EarlyStopping counter: {self.counter} out of {self.patience}. Validational loss: {val_loss}')
+                print(f'EarlyStopping counter: {self.counter} out of {self.patience}. Validation loss: {val_loss:.6f}')
             if self.counter >= self.patience:
                 self.early_stop = True
         else:
@@ -30,7 +27,7 @@ class EarlyStopping:
 
     def save_checkpoint(self, val_loss, model, epoch, optimizer, scheduler, scaler, train_losses, val_losses):
         if self.verbose:
-            print(f'Validational loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
+            print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}). Saving model...')
 
         state = {
             'epoch': epoch + 1,
@@ -40,10 +37,9 @@ class EarlyStopping:
             'scaler': scaler.state_dict(),
             'train_losses': train_losses,
             'val_losses': val_losses,
-            # 'train_mious': train_mious,
-            # 'val_mious': val_mious,
         }
 
         torch.save(state, 'checkpoint.pt')
         torch.save(model.state_dict(), 'checkpoint_weights.pth')
         self.val_loss_min = val_loss
+
