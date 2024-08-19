@@ -48,8 +48,7 @@ Also there is algorithm for finding points for landing based on euclidean distan
     python main.py --mode points
 
 ## Dataset
-The dataset used for this project is **"Semantic Drone Dataset"** and it consists of 400 drone images and their corresponding segmentation masks.
-
+The dataset used for this project is **"Semantic Drone Dataset"**. It consists of 400 aerial drone images and their corresponding segmentation masks.
 URL: https://datasetninja.com/semantic-drone
 
 ## Model
