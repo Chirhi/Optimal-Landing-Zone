@@ -1,7 +1,7 @@
 # Landing zone semantic segmentation and finding optimal landing points for drone images
 This repository contains code for a semantic segmentation project using deep learning models and algorithm for finding optimal landing points on segmented regions.
 
-Includes: **.ipynb** and **.py** files.
+Includes: **.ipynb** (old) and **.py** files.
 
 **Stack:** Python, PyTorch, OpenCV, Albumentations, Segmentation Models PyTorch, scikit-learn, Matplotlib, tqdm, NumPy, SciPy
 
