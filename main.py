@@ -5,23 +5,38 @@ import numpy as np
 from train import train_model
 from eval import evaluate_model, plot_predictions
 from model import create_model
-from utils import load_checkpoint, gc_collect, MultiDatasetLoader, plot_loss
+from utils import load_checkpoint, gc_collect, MultiDatasetLoader, plot_loss, create_dataloader
 from early_stopping import EarlyStopping
 from optimal_point import plot_furthest_points
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.amp import GradScaler
-from torch.utils.data import ConcatDataset, DataLoader
+from torch.utils.data import ConcatDataset
 
 def main(args):
+    """
+    This is the main function that controls the entire program flow. It takes in a single argument 'args' which is expected to be a namespace object containing the mode of operation.
+
+    The function supports three modes of operation:
+    - 'train': This mode trains a deep learning model on a combined dataset of images and their corresponding masks.
+    - 'evaluate': This mode evaluates the performance of a trained model on a test dataset and plots the results.
+    - 'points': This mode runs a point-finding algorithm on a test dataset using a trained model.
+
+    The function returns no value.
+
+    Parameters:
+    args (namespace): A namespace object containing the mode of operation.
+
+    Returns:
+    None
+    """
     # Constants
-    num_classes = 6
-    H, W = 384, 576
-    batch_size = 8
-    num_epochs = 100
-    # model_path = 'checkpointDeep69Classes6.pt'
-    model_path = 'checkpoint.pt'
-    num_samples = 1
+    num_classes = 6              # number of classes
+    H, W = 384, 576              # image height and width to resize the images
+    batch_size = 8               # batch size
+    num_epochs = 100             # number of epochs to train the model
+    model_path = 'checkpoint.pt' # file path to the model checkpoint
+    num_samples = 1              # number of samples to plot
 
     # Define color map (cmap) for visualizing class predictions
     cmap = np.array([
@@ -64,7 +79,7 @@ def main(args):
     # Optimizer, Scheduler, Scaler, and EarlyStopping
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, min_lr=1e-6)
     scaler = GradScaler('cuda')
 
     # Load existing model (for evaluation or resuming training)
@@ -83,32 +98,12 @@ def main(args):
     combined_test_dataset = ConcatDataset([loaders[key].dataset for key in loaders if 'test_loader' in key])
 
     # Create a data loader for the combined dataset
-    combined_train_loader = DataLoader(
-        combined_train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        num_workers=0,
-        pin_memory=True
-    )
-    
-    combined_valid_loader = DataLoader(
-        combined_valid_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=True
-    )
+    combined_train_loader = create_dataloader(combined_train_dataset, batch_size, shuffle=True)
+    combined_valid_loader = create_dataloader(combined_valid_dataset, batch_size, shuffle=False)
+    combined_test_loader = create_dataloader(combined_test_dataset, batch_size, shuffle=False)
 
-    combined_test_loader = DataLoader(
-        combined_test_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=0,
-        pin_memory=True
-    )
-
+    # Train the model on the combined dataset
     if args.mode == 'train':
-        # Train the model on the combined dataset
         train_model(
             model, 
             combined_train_loader, 
@@ -127,8 +122,8 @@ def main(args):
             criterion
         )
 
+    # Evaluate and plot results
     elif args.mode == 'evaluate':
-        # Evaluate and plot results
         evaluate_model(model, combined_test_loader, num_classes)
         plot_predictions(combined_test_loader, model, cmap, num_samples)
 
@@ -147,7 +142,7 @@ def main(args):
             outputs = model(images)
             _, preds = torch.max(outputs.data, 1)
 
-            plot_furthest_points(images.cpu(), labels.cpu(), preds.cpu(), cmap, 'marker', 30, 'bottom')
+            plot_furthest_points(images.cpu(), labels.cpu(), preds.cpu(), cmap, 'marker', 30, 'bottom', num_samples)
 
     gc_collect()
 

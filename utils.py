@@ -30,7 +30,7 @@ def load_checkpoint(model, optimizer, scheduler, scaler, filename='checkpoint.pt
         print("Warning: val_losses is empty, setting val_loss_min to infinity")
         val_loss_min = float('inf')
 
-    print(f"Loaded checkpoint: epoch {epoch}, val_loss_min {val_loss_min:.6f}")
+    print(f"Loaded checkpoint: Epoch: {epoch}, Validation Loss: {val_loss_min:.6f}")
     return epoch, train_losses, val_losses, val_loss_min
 
 def plot_loss(train_losses, val_losses):
@@ -133,3 +133,25 @@ class MultiDatasetLoader:
             loaders[f'{name}_test_loader'] = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=0, pin_memory=True)
 
         return loaders
+
+def create_dataloader(dataset, batch_size, shuffle, num_workers=0, pin_memory=True):
+    """
+    Creates a DataLoader for the given dataset.
+
+    Args:
+        dataset (Dataset): The dataset to create a DataLoader for.
+        batch_size (int): The batch size for the DataLoader.
+        shuffle (bool): Whether to shuffle the dataset.
+        num_workers (int, optional): Number of subprocesses to use for data loading. Default is 0.
+        pin_memory (bool, optional): Whether to use pinned (page-locked) memory. Default is True.
+
+    Returns:
+        DataLoader: The DataLoader for the given dataset.
+    """
+    return DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        pin_memory=pin_memory
+    )

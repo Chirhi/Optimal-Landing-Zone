@@ -53,9 +53,9 @@ def plot_predictions(loader, model, cmap, num_samples=5):
 
         for i in range(num_samples):
             fig, ax = plt.subplots(1, 3, figsize=(20, 5))
-            ax[0].imshow(np.transpose(images[i].numpy(), (1, 2, 0)))  # Оригинальное изображение
-            ax[1].imshow(cmap[labels[i].numpy()])  # Метки
-            ax[2].imshow(cmap[predictions[i].numpy()])  # Предсказание
+            ax[0].imshow(np.transpose(images[i].numpy(), (1, 2, 0)))
+            ax[1].imshow(cmap[labels[i].numpy()])
+            ax[2].imshow(cmap[predictions[i].numpy()])
             ax[0].set_title('Оригинал')
             ax[1].set_title('Маска')
             ax[2].set_title('Предсказание')

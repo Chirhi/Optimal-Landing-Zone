@@ -36,12 +36,14 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
                 inputs, labels = data
                 inputs, labels = inputs.to(device, non_blocking=True), labels.to(device, non_blocking=True)
 
+                # Mixed precision training
                 with autocast('cuda'):
                     outputs = model(inputs)
                     loss = criterion(outputs, labels)
                     loss = loss / 4
                 scaler.scale(loss).backward()
 
+                # Gradient accumulation
                 if (i + 1) % 4 == 0:
                     scaler.step(optimizer)
                     scaler.update()
@@ -75,8 +77,6 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
             'scaler': scaler.state_dict(),
             'train_losses': train_losses,
             'val_losses': val_losses,
-            # 'train_mious': train_mious,
-            # 'val_mious': val_mious,
         }, 'final_model.pt')
 
 def validate_model(model, valid_loader, criterion, device):

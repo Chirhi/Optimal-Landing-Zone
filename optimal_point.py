@@ -85,7 +85,7 @@ def calculate_score(point, zone_size, center_coords, img_shape, dist_from_edge, 
     score = 0.4 * (1 - distance_from_reference_norm) + 0.2 * size_score + 0.4 * dist_from_edge_norm
     return score
 
-def plot_furthest_points(images, masks, preds, cmap, zone_type, num_points=30, view_mode='bottom'):
+def plot_furthest_points(images, masks, preds, cmap, zone_type, num_points=30, view_mode='bottom', num_samples = 1):
     """
     Plots the furthest points in a given image based on the specified zone type.
 
@@ -102,7 +102,7 @@ def plot_furthest_points(images, masks, preds, cmap, zone_type, num_points=30, v
     None
     """
     with torch.no_grad():
-        for i in range(1):  # Change to plot only one sample
+        for i in range(num_samples):
             image = images[i]
             pred = preds[i]
 
@@ -146,7 +146,7 @@ def plot_furthest_points(images, masks, preds, cmap, zone_type, num_points=30, v
             for point, dist, _ in all_furthest_points[:-1]:
                 ax[2].scatter(point[1], point[0], c='yellow', s=20)
 
-            # Выделение самой оптимальной точки
+            # Highlight the best point
             if len(all_furthest_points) > 0:
                 best_point, best_dist, _ = all_furthest_points[-1]
                 ax[2].scatter(best_point[1], best_point[0], c='lime', s=50)
