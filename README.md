@@ -58,13 +58,13 @@ URL: https://www.kaggle.com/datasets/aletbm/swiss-drone-and-okutama-drone-datase
 
 ![Figure_1](https://github.com/user-attachments/assets/8940eaa7-6166-4e02-a1bc-7ecc1d3143b3)
 
-- Mean Precision: 0.8991
-- Mean Recall: 0.8979
-- Mean F1-Score: 0.8984
-- Mean MIoU: 0.8011
-- Class 0: Precision: 0.8750, Recall: 0.8950, F1-Score: 0.8849
-- Class 1: Precision: 0.9378, Recall: 0.9189, F1-Score: 0.9282
-- Class 2: Precision: 0.9382, Recall: 0.9522, F1-Score: 0.9452
-- Class 3: Precision: 0.9579, Recall: 0.9573, F1-Score: 0.9576
-- Class 4: Precision: 0.8400, Recall: 0.8485, F1-Score: 0.8442
-- Class 5: Precision: 0.8460, Recall: 0.8152, F1-Score: 0.8303
+- Loaded checkpoint: Epoch: 72, Validation Loss: 0.236323
+- Mean Recall: 0.8825
+- Mean F1-Score: 0.8766
+- Mean MIoU: 0.7679
+- Class 0: Precision: 0.8829, Recall: 0.9331, F1-Score: 0.9073
+- Class 1: Precision: 0.9448, Recall: 0.8955, F1-Score: 0.9195
+- Class 2: Precision: 0.8148, Recall: 0.9445, F1-Score: 0.8748
+- Class 3: Precision: 0.9492, Recall: 0.9441, F1-Score: 0.9466
+- Class 4: Precision: 0.7875, Recall: 0.6916, F1-Score: 0.7364
+- Class 5: Precision: 0.8636, Recall: 0.8860, F1-Score: 0.8747
