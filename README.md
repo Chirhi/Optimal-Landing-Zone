@@ -20,8 +20,7 @@ Also there is algorithm for finding points for landing based on euclidean distan
 - **DeepLabV3+ Model:** Utilizes the DeepLabV3+ architecture with MobileNetV2 as the backbone.
 - **Image Preprocessing:** OpenCV and Albumentations for image resizing, augmentation, and normalization.
 - **Multiple datasets:** Supports including multiple datasets and remapping their classes.
-- **Custom Training Loop:** Includes a custom training loop with mixed precision training using PyTorch's AMP.
-- **Early Stopping:** Implements early stopping to prevent overfitting during training.
+- **Custom Training Loop:** Includes a custom training loop with mixed precision training, learning rate scheduler, early stopping, gradient accumulation.
 - **Point Finding Algorithm:** Includes a post-processing step to identify the optimal points in segmented regions.
 
 ## Setup Instructions on Windows
@@ -52,7 +51,7 @@ Also there is algorithm for finding points for landing based on euclidean distan
 The datasets used for this project are:
 - **"Semantic Drone Dataset"**. Consists of 400 aerial drone images.
 URL: https://datasetninja.com/semantic-drone.
-- **Swiss Drone and Okutama Drone Datasets**. Consists of 100 aerial drone images.
+- **Swiss Drone and Okutama Drone Datasets**. Consists of 191 aerial drone images.
 URL: https://www.kaggle.com/datasets/aletbm/swiss-drone-and-okutama-drone-datasets
 
 ## Results
