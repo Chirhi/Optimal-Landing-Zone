@@ -29,6 +29,9 @@ def main(args):
     model_path = 'final_model.pt'       # file path to the model checkpoint
     num_samples = 1                     # number of samples to plot for evaluation
     num_workers = 4                     # number of workers to use for data loading
+    zone_type = 'marker'                # type of zone to generate the mask for
+    view_mode = 'bottom'                # view mode of the camera
+    num_points = 30                     # max number of points to find in the specified zone
 
     # Define color map (cmap) for visualizing class predictions
     cmap = np.array([
@@ -149,7 +152,7 @@ def main(args):
             outputs = model(images)
             _, preds = torch.max(outputs.data, 1)
 
-            plot_furthest_points(images.cpu(), preds.cpu(), cmap, 'marker', 30, 'bottom', num_samples)
+            plot_furthest_points(images.cpu(), preds.cpu(), cmap, zone_type, num_points, view_mode, num_samples)
 
     elif args.mode == 'inference':
         input_size = (1, 3, H, W)
