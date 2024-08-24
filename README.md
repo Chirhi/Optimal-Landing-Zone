@@ -34,7 +34,7 @@ This approach ensures that the chosen landing point is both safe and strategical
     ```bash
     pip install -r requirements.txt
 
-3. Prepare your dataset locally and adjust the paths and classes in main.py accordingly. Datasets should contain img and mask folders without subfolders
+3. Prepare your dataset locally and adjust the paths and variables in main.py accordingly. Datasets should contain img and mask folders without subfolders
    
 4. Train the model:
     ```bash
@@ -59,7 +59,11 @@ URL: https://datasetninja.com/semantic-drone.
 - **Swiss Drone and Okutama Drone Datasets**. Consists of 191 aerial drone images.
 URL: https://www.kaggle.com/datasets/aletbm/swiss-drone-and-okutama-drone-datasets
 
+
 ## Results
+
+![Figure_1](https://github.com/user-attachments/assets/8c046242-6fe1-4223-9182-5d9be6263207)
+![Figure_2](https://github.com/user-attachments/assets/2d2ad030-6687-4fcb-ba7c-07fcc704d0c7)
 
 - Loaded checkpoint: Epoch: 210, Validation Loss: 0.295837
 - Mean Precision: 0.8845
