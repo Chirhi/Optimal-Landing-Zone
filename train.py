@@ -69,7 +69,7 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
 
     if not early_stopping.early_stop:
         print("Saving final model")
-        torch.save({
+        state = {
             'epoch': num_epochs,
             'state_dict': model.state_dict(),
             'optimizer': optimizer.state_dict(),
@@ -77,9 +77,23 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
             'scaler': scaler.state_dict(),
             'train_losses': train_losses,
             'val_losses': val_losses,
-        }, 'final_model.pt')
+        }
+        torch.save(state, 'final_model.pt')
+        torch.save(model.state_dict(), 'final_model_weights.pt')
 
 def validate_model(model, valid_loader, criterion, device):
+    """
+    Validates a given model on a validation dataset.
+
+    Args:
+        model (nn.Module): The model to be validated.
+        valid_loader (DataLoader): The validation dataset loader.
+        criterion (nn.Module): The loss function used for validation.
+        device (torch.device): The device on which the model is located.
+
+    Returns:
+        float: The average validation loss.
+    """
     model.eval()
     val_loss = 0.0
     with torch.no_grad():

@@ -1,6 +1,5 @@
 import cv2
 import torch
-import numpy as np
 from torch.utils.data import Dataset
 
 class DroneDataset(Dataset):
@@ -28,6 +27,15 @@ class DroneDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
+        """
+        Retrieves an image and its corresponding mask from the dataset at the specified index.
+
+        Args:
+            idx (int): The index of the image and mask to retrieve.
+
+        Returns:
+            tuple: A tuple containing the image and its corresponding mask.
+        """
         from utils import remap_labels
         image = cv2.imread(self.images[idx], cv2.IMREAD_COLOR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -47,7 +55,6 @@ class DroneDataset(Dataset):
             mask = remap_labels(mask, self.class_mapping)
             mask = torch.tensor(mask, dtype=torch.long)
         else:
-            # Применяем remap_labels только к каналам маски
             mask = remap_labels(mask[:, :, 0], self.class_mapping)
             mask = torch.tensor(mask, dtype=torch.long)
 

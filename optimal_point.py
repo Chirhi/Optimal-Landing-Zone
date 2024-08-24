@@ -3,9 +3,19 @@ import cv2
 from scipy.ndimage import distance_transform_edt
 import matplotlib.pyplot as plt
 import torch
+from utils import denormalize
 
 def filter_small_zones(mask, min_size=100):
-    """Filtering masks by size bigger than min_size"""
+    """
+    Filters a binary mask by removing connected components smaller than a specified minimum size.
+
+    Parameters:
+        mask (numpy.ndarray): A binary mask where 0 represents the background and 1 represents the foreground.
+        min_size (int, optional): The minimum size of a connected component to be kept in the mask. Defaults to 100.
+
+    Returns:
+        numpy.ndarray: A filtered binary mask where connected components smaller than min_size have been removed.
+    """
     num_labels, labels_im = cv2.connectedComponents(mask.astype(np.uint8))
     filtered_mask = np.zeros_like(mask)
     for label in range(1, num_labels):
@@ -13,12 +23,17 @@ def filter_small_zones(mask, min_size=100):
             filtered_mask[labels_im == label] = 1
     return filtered_mask
 
-def add_border(mask):
-    """Adding a border around the image"""
-    return np.pad(mask, pad_width=1, mode='constant', constant_values=0)
-
 def find_multiple_furthest_points(mask, num_points):
-    """Finding multiple furthest points from the edges of the zone"""
+    """
+    Finds multiple furthest points from the edges of a given mask.
+
+    Parameters:
+    mask (numpy array): A 2D binary mask where 0 represents the edges and 1 represents the zone.
+    num_points (int): The number of furthest points to find.
+
+    Returns:
+    list: A list of tuples containing the coordinates and maximum distances of the furthest points.
+    """
     furthest_points = []
     mask_copy = mask.copy()
     
@@ -37,13 +52,32 @@ def find_multiple_furthest_points(mask, num_points):
     return furthest_points
 
 def dilate_mask(mask, kernel_size=15):
-    """Extend the mask to increase the boundaries of the objects"""
+    """
+    Extend the mask to increase the boundaries of the objects.
+
+    Parameters:
+    mask (numpy array): The input mask to be dilated.
+    kernel_size (int): The size of the kernel to use for dilation. Defaults to 15.
+
+    Returns:
+    numpy array: The dilated mask.
+    """
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
     dilated_mask = cv2.dilate(mask, kernel, iterations=1)
     return dilated_mask
 
 def get_zone_mask(pred, zone_type='marker', dilate_kernel_size=60):
-    """Getting zone mask by the type of the zone and the dilation of moving objects"""
+    """
+    Returns a zone mask based on the type of zone and the dilation of moving objects.
+
+    Parameters:
+    pred (numpy array): The prediction array to generate the zone mask from.
+    zone_type (str): The type of zone to generate the mask for. Can be 'safe', 'road', 'water', 'roadandwater', or 'marker'. Defaults to 'marker'.
+    dilate_kernel_size (int): The size of the kernel to use for dilating the moving objects mask. Defaults to 60.
+
+    Returns:
+    numpy array: The generated zone mask.
+    """
     moving_objects_mask = (pred == 4).numpy().astype(np.uint8)
     dilated_moving_objects_mask = dilate_mask(moving_objects_mask, kernel_size=dilate_kernel_size)
     
@@ -65,7 +99,21 @@ def get_zone_mask(pred, zone_type='marker', dilate_kernel_size=60):
     return zone_mask
 
 def calculate_score(point, zone_size, center_coords, img_shape, dist_from_edge, view_mode):
-    """Calculation of the score of the point based on its position and the zone size"""
+    """
+    Calculates a score for a given point based on its position within an image, 
+    the size of the zone it belongs to, and its distance from the image edges.
+
+    Parameters:
+        point (tuple): The coordinates of the point (y, x).
+        zone_size (int): The size of the zone the point belongs to.
+        center_coords (tuple): The coordinates of the center of the image (y, x).
+        img_shape (tuple): The shape of the image (height, width).
+        dist_from_edge (int): The distance from the point to the nearest edge.
+        view_mode (str): The camera view mode, either 'forward' or 'bottom'.
+
+    Returns:
+        float: A score representing the point's position and zone size.
+    """
     y, x = point
 
     if view_mode == 'forward':
@@ -85,22 +133,21 @@ def calculate_score(point, zone_size, center_coords, img_shape, dist_from_edge, 
     score = 0.4 * (1 - distance_from_reference_norm) + 0.2 * size_score + 0.4 * dist_from_edge_norm
     return score
 
-def plot_furthest_points(images, masks, preds, cmap, zone_type, num_points=30, view_mode='bottom', num_samples = 1):
+def plot_furthest_points(images, preds, cmap, zone_type='marker', num_points=30, view_mode='bottom', num_samples = 1):
     """
     Plots the furthest points in a given image based on the specified zone type.
 
     Parameters:
     images (list): A list of input images.
-    masks (list): A list of masks corresponding to the input images.
     preds (list): A list of predictions corresponding to the input images.
     cmap (object): A colormap object used for visualization.
     zone_type (str): The type of zone to find points in (e.g., 'road', 'water', etc.).
     num_points (int, optional): The number of points to find in the specified zone. Defaults to 30.
     view_mode (str, optional): The camera view mode (e.g., 'bottom', 'forward'). Defaults to 'bottom'.
-
-    Returns:
-    None
     """
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
+
     with torch.no_grad():
         for i in range(num_samples):
             image = images[i]
@@ -109,7 +156,7 @@ def plot_furthest_points(images, masks, preds, cmap, zone_type, num_points=30, v
             def process_zone(zone_type):
                 zone_mask = get_zone_mask(pred, zone_type)
                 zone_filtered = filter_small_zones(zone_mask)
-                bordered_mask = add_border(zone_filtered)
+                bordered_mask = np.pad(zone_filtered, pad_width=1, mode='constant', constant_values=0)
                 center_coords = (image.shape[1] // 2, image.shape[2] // 2)
                 img_shape = image.shape[1:]  # (H, W)
 
@@ -139,9 +186,9 @@ def plot_furthest_points(images, masks, preds, cmap, zone_type, num_points=30, v
                 all_furthest_points = process_zone('road')
 
             fig, ax = plt.subplots(1, 3, figsize=(20, 5))
-            ax[0].imshow(np.transpose(image.numpy(), (1, 2, 0)))
+            ax[0].imshow(denormalize(image, mean, std))
             ax[1].imshow(cmap[pred.numpy()])
-            ax[2].imshow(np.transpose(image.numpy(), (1, 2, 0)))
+            ax[2].imshow(denormalize(image, mean, std))
 
             for point, dist, _ in all_furthest_points[:-1]:
                 ax[2].scatter(point[1], point[0], c='yellow', s=20)

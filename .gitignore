@@ -2,3 +2,5 @@ __pycache__/
 .git/
 .venv/
 .ipynb_checkpoints/
+*.ipynb
+DroneSemantic/
