@@ -34,7 +34,15 @@ This approach ensures that the chosen landing point is both safe and strategical
     ```bash
     pip install -r requirements.txt
 
-3. Prepare your dataset locally and adjust the paths and variables in main.py accordingly. Datasets should contain img and mask folders without subfolders
+3. Prepare your dataset locally and adjust the paths and variables in main.py accordingly. Datasets should contain img and mask folders without subfolders. For example:
+   ```bash
+   DroneSemantic
+   ├───SemanticDroneDataset
+   │   ├───img
+   │   └───mask
+   └───SwissOkuna
+       ├───img
+       └───mask
    
 4. Train the model:
     ```bash
