@@ -43,6 +43,7 @@ def main(args):
         [128, 128, 128]  # Class 5: Маркер (Marker)
     ])
 
+    # Define datasets information
     datasets_info = [
         {
             'name': 'semantic_drone_dataset',
@@ -94,7 +95,7 @@ def main(args):
         print("No existing model found, starting from scratch")
         start_epoch, train_losses, val_losses, val_loss_min = 0, [], [], float('inf')
 
-    early_stopping = EarlyStopping(patience=20, verbose=True, val_loss_min=val_loss_min, save_interval=5)
+    early_stopping = EarlyStopping(patience=20, verbose=True, val_loss_min=val_loss_min)
 
     # Preprocess images (resize)
     image_resizer = ImageResizer(new_size=(W, H), num_workers=num_workers)
@@ -154,6 +155,7 @@ def main(args):
 
             plot_furthest_points(images.cpu(), preds.cpu(), cmap, zone_type, num_points, view_mode, num_samples)
 
+    # Measure inference time without point-finding
     elif args.mode == 'inference':
         input_size = (1, 3, H, W)
         avg_time = measure_inference_time(model, device, input_size)

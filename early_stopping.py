@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 class EarlyStopping:
-    def __init__(self, patience=5, verbose=False, delta=0, val_loss_min=np.Inf, save_interval=5):
+    def __init__(self, patience=5, verbose=False, delta=0, val_loss_min=np.Inf):
         """
         Initializes an instance of the EarlyStopping class with the following parameters:
         
@@ -11,7 +11,6 @@ class EarlyStopping:
             verbose (bool, optional): Whether to print messages during training. Defaults to False.
             delta (float, optional): The threshold for improvement in validation loss. Defaults to 0.
             val_loss_min (float, optional): The minimum validation loss. Defaults to positive infinity.
-            save_interval (int, optional): The number of epochs to wait before saving the model. Defaults to 5.
         """
         self.patience = patience
         self.verbose = verbose
@@ -20,7 +19,6 @@ class EarlyStopping:
         self.early_stop = False
         self.val_loss_min = val_loss_min
         self.delta = delta
-        self.save_interval = save_interval
 
     def __call__(self, val_loss, model, epoch, optimizer, scheduler, scaler, train_losses, val_losses):
         """

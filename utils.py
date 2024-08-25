@@ -361,7 +361,7 @@ def measure_inference_time(model, device, input_size=(1, 3, 224, 224), num_itera
             model(dummy_input)
     
     # Measure inference time
-    start_time = time.perf_counter()  # Use perf_counter for better accuracy
+    start_time = time.perf_counter()
     
     with torch.no_grad():
         for _ in range(num_iterations):
