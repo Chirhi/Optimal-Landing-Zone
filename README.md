@@ -34,9 +34,9 @@ This approach ensures that the chosen landing point is both safe and strategical
     ```bash
     pip install -r requirements.txt
 
-3. Prepare your dataset locally and adjust the paths and variables in main.py accordingly. Datasets should contain img and mask folders without subfolders. For example:
+3. Prepare your dataset locally and adjust the paths and variables in config.yaml accordingly. Datasets should contain img and mask folders without subfolders. For example:
    ```bash
-   DroneSemantic
+   datasets
    ├───SemanticDroneDataset
    │   ├───img
    │   └───mask
@@ -46,19 +46,30 @@ This approach ensures that the chosen landing point is both safe and strategical
    
 4. Train the model:
     ```bash
-    python main.py --mode train
+    python src/main.py --mode train
 
 5. Evaluate the model:
     ```bash
-    python main.py --mode evaluate
+    python src/main.py --mode evaluate
 
 6. Run the point-finding algorithm:
     ```bash
-    python main.py --mode points
+    python src/main.py --mode points
 
 7. Run inference measurument:
     ```bash
-    python main.py --mode inference
+    python src/main.py --mode inference
+
+8. Also you can use console arguments for every mode if needed:
+   ```bash
+   --model_path models/checkpoint.pt
+   --num_epochs 200
+   --batch_size 25
+   --early_stopping_patience 20
+   --num_workers 4
+   --zone_type marker
+   --view_mode bottom
+   --num_points 30
 
 ## Datasets
 The datasets used for this project are:
@@ -69,9 +80,8 @@ URL: https://www.kaggle.com/datasets/aletbm/swiss-drone-and-okutama-drone-datase
 
 
 ## Results
-
-![Figure_1](https://github.com/user-attachments/assets/8c046242-6fe1-4223-9182-5d9be6263207)
-![Figure_2](https://github.com/user-attachments/assets/2d2ad030-6687-4fcb-ba7c-07fcc704d0c7)
+![Figure_1](https://github.com/user-attachments/assets/70f27202-4cc8-4397-8c6f-7e165a4f6799)
+![Figure_2](https://github.com/user-attachments/assets/f74f4ab0-cc5d-4c83-b922-d5c1e9f6cfb7)
 
 - Loaded checkpoint: Epoch: 210, Validation Loss: 0.295837
 - Mean Precision: 0.8845
