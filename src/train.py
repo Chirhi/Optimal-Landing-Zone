@@ -78,8 +78,8 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
             'train_losses': train_losses,
             'val_losses': val_losses,
         }
-        torch.save(state, 'final_model.pt')
-        torch.save(model.state_dict(), 'final_model_weights.pt')
+        torch.save(state, 'models/final_model.pt')
+        torch.save(model.state_dict(), 'models/final_model_weights.pt')
 
 def validate_model(model, valid_loader, criterion, device):
     """

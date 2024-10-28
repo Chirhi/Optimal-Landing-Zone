@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 
@@ -75,7 +76,9 @@ class EarlyStopping:
             'val_losses': val_losses,
         }
 
-        torch.save(state, 'checkpoint.pt')
-        torch.save(model.state_dict(), 'checkpoint_weights.pth')
+        os.makedirs('models', exist_ok=True)
+
+        torch.save(state, 'models/checkpoint.pt')
+        torch.save(model.state_dict(), 'models/checkpoint_weights.pth')
 
         self.val_loss_min = val_loss

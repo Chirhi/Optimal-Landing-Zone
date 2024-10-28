@@ -5,6 +5,8 @@ import torch
 import gc
 import matplotlib.pyplot as plt
 import time
+import argparse
+import yaml
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 from dataset import DroneDataset
@@ -120,38 +122,6 @@ def remap_labels(mask, class_mapping):
         new_mask[mask == old_class] = new_class
     return new_mask
 
-def load_checkpoint(model, optimizer, scheduler, scaler, filename='checkpoint.pt'):
-    """
-    Load a checkpoint from a file and restore the model, optimizer, scheduler, and scaler.
-
-    Args:
-        model (torch.nn.Module): The model to be restored.
-        optimizer (torch.optim.Optimizer): The optimizer to be restored.
-        scheduler (torch.optim.lr_scheduler._LRScheduler): The learning rate scheduler to be restored.
-        scaler (torch.cuda.amp.GradScaler): The gradient scaler to be restored.
-        filename (str, optional): The name of the file to load the checkpoint from. Defaults to 'checkpoint.pt'.
-
-    Returns:
-        tuple: A tuple containing the epoch, training losses, validation losses, and the minimum validation loss.
-    """
-    checkpoint = torch.load(filename)
-    model.load_state_dict(checkpoint['state_dict'])
-    optimizer.load_state_dict(checkpoint['optimizer'])
-    scheduler.load_state_dict(checkpoint['scheduler'])
-    scaler.load_state_dict(checkpoint['scaler'])
-    epoch = checkpoint['epoch']
-    train_losses = checkpoint['train_losses']
-    val_losses = checkpoint['val_losses']
-    if val_losses:
-        val_loss_min = min(val_losses)
-    else:
-        print("Warning: val_losses is empty, setting val_loss_min to infinity")
-        val_loss_min = float('inf')
-
-    print(f"Loaded checkpoint: Epoch: {epoch}, Validation Loss: {val_loss_min:.6f}")
-    return epoch, train_losses, val_losses, val_loss_min
-
-# Function to denormalize images
 def denormalize(image, mean, std):
     """
     Denormalizes an image by reversing the normalization process in transforms module.
@@ -281,6 +251,11 @@ class MultiDatasetLoader:
 
             # Find common files between images and masks
             common_names = list(set(img_names).intersection(mask_names))
+
+            # If common_names is empty, raise a warning
+            if not common_names:
+                print(f"Warning: No matching image and mask files found in dataset {name}. Check your file paths and file names.")
+                continue
 
             # Dataset splits
             X_trainval, X_test = train_test_split(common_names, test_size=0.1, random_state=19)

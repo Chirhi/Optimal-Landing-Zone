@@ -4,6 +4,7 @@ from scipy.ndimage import distance_transform_edt
 import matplotlib.pyplot as plt
 import torch
 from utils import denormalize
+import matplotlib.patches as mpatches
 
 def filter_small_zones(mask, min_size=100):
     """
@@ -145,8 +146,18 @@ def plot_furthest_points(images, preds, cmap, zone_type='marker', num_points=30,
     num_points (int, optional): The number of points to find in the specified zone. Defaults to 30.
     view_mode (str, optional): The camera view mode (e.g., 'bottom', 'forward'). Defaults to 'bottom'.
     """
+    # Mean and standard deviation for denormalization
     mean = [0.485, 0.456, 0.406]
     std = [0.229, 0.224, 0.225]
+
+    # Class labels for legend
+    class_labels = ['Obstacles', 'Landing Zones', 'Water', 'Roads', 'Moving Objects', 'Marker']
+    legend_patches = [mpatches.Patch(color=np.array(color)/255.0, label=label) for color, label in zip(cmap, class_labels)]
+
+    # Creating legend for the image with points
+    landing_points_legend = [
+        mpatches.Patch(color='yellow', label='Landing points', alpha=0.5), mpatches.Patch(color='lime', label='Optimal point')
+    ]
 
     with torch.no_grad():
         for i in range(num_samples):
@@ -172,31 +183,52 @@ def plot_furthest_points(images, preds, cmap, zone_type='marker', num_points=30,
                     all_furthest_points.extend(furthest_points)
 
                 all_furthest_points.sort(key=lambda p: calculate_score(p[0], p[2], center_coords, img_shape, p[1], view_mode))
-                return all_furthest_points
+                return all_furthest_points, zone_type
 
             # Try to find points in the specified zone first
-            all_furthest_points = process_zone(zone_type)
+            all_furthest_points, current_zone_type = process_zone(zone_type)
 
             # If not found, find 'safe' points instead
             if len(all_furthest_points) == 0:
-                all_furthest_points = process_zone('safe')
+                print(f"No points found for zone type '{zone_type}'. Switching to 'safe' zone.")
+                all_furthest_points, current_zone_type = process_zone('safe')
 
             # If not found, find 'road' points instead
             if len(all_furthest_points) == 0:
-                all_furthest_points = process_zone('road')
+                print(f"No points found for 'safe' zone. Switching to 'road' zone.")
+                all_furthest_points, current_zone_type = process_zone('road')
+
+            # If no points found for any zone type, skip this sample
+            if len(all_furthest_points) == 0:
+                print(f"No points found for any zone type. Skipping this sample.")
+                continue
+
+            print(f"Points found using zone type: {current_zone_type}")
 
             fig, ax = plt.subplots(1, 3, figsize=(20, 5))
             ax[0].imshow(denormalize(image, mean, std))
-            ax[1].imshow(cmap[pred.numpy()])
+
+            # Создание цветного изображения предсказаний
+            pred_rgb = np.zeros((*pred.shape, 3), dtype=np.uint8)
+            for class_idx in range(len(cmap)):
+                pred_rgb[pred.numpy() == class_idx] = cmap[class_idx]
+
+            ax[1].imshow(pred_rgb)
             ax[2].imshow(denormalize(image, mean, std))
 
             for point, dist, _ in all_furthest_points[:-1]:
-                ax[2].scatter(point[1], point[0], c='yellow', s=20)
+                ax[2].scatter(point[1], point[0], c='yellow', s=20, alpha=0.6)
 
             # Highlight the best point
             if len(all_furthest_points) > 0:
                 best_point, best_dist, _ = all_furthest_points[-1]
-                ax[2].scatter(best_point[1], best_point[0], c='lime', s=50)
+                ax[2].scatter(best_point[1], best_point[0], c='lime', s=50, alpha=0.7)
+
+            # Adding legend for prediction
+            ax[1].legend(handles=legend_patches, loc='upper right', framealpha=0.3, fontsize='x-small', markerscale=0.7)
+        
+            # Adding legend for the image with points
+            ax[2].legend(handles=landing_points_legend, loc='upper right', framealpha=0.3, fontsize='x-small', markerscale=0.7)
 
             ax[0].set_title('Original')
             ax[1].set_title('Prediction')
