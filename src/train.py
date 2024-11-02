@@ -22,10 +22,7 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
     scaler (GradScaler): The gradient scaler to use for mixed precision training.
     early_stopping (EarlyStopping): The early stopping criterion to use.
     criterion (nn.Module): The loss function to use for training.
-
-    Returns:
-    None
-    """
+    """    
     for epoch in range(start_epoch, num_epochs):
         model.train()
         running_loss = 0.0
@@ -36,10 +33,19 @@ def train_model(model, train_loader, valid_loader, num_classes, num_epochs, star
                 inputs, labels = data
                 inputs, labels = inputs.to(device, non_blocking=True), labels.to(device, non_blocking=True)
 
+                # Check for invalid class indices
+                assert torch.all(labels >= 0) and torch.all(labels < num_classes), "Labels contain invalid class indices."
+
                 # Mixed precision training
                 with autocast('cuda'):
                     outputs = model(inputs)
                     loss = criterion(outputs, labels)
+
+                    # Check for NaN or Inf losses to catch any errors with the loss function
+                    if torch.isnan(loss) or torch.isinf(loss):
+                        print("Loss is NaN or Inf, skipping batch.")
+                        continue
+
                     loss = loss / 4
                 scaler.scale(loss).backward()
 

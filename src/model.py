@@ -44,7 +44,7 @@ def load_checkpoint(model, optimizer, scheduler, scaler, filename='checkpoint.pt
     Returns:
         tuple: A tuple containing the epoch, training losses, validation losses, and the minimum validation loss.
     """
-    checkpoint = torch.load(filename)
+    checkpoint = torch.load(filename, weights_only=False)
     model.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
     scheduler.load_state_dict(checkpoint['scheduler'])

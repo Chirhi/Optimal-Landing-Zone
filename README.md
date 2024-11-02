@@ -34,7 +34,7 @@ This approach ensures that the chosen landing point is both safe and strategical
     ```bash
     pip install -r requirements.txt
 
-3. Prepare your dataset locally and adjust the paths and variables in config.yaml accordingly. Datasets should contain img and mask folders without subfolders. For example:
+3. Prepare your dataset locally and adjust the paths and variables in config.yaml accordingly. Datasets should contain img and grayscale mask folders without subfolders. Algorithm will create resized images folders and subfolders for training, validation and testing itself after. For example:
    ```bash
    datasets
    ├───SemanticDroneDataset
@@ -48,7 +48,7 @@ This approach ensures that the chosen landing point is both safe and strategical
     ```bash
     python src/main.py --mode train
 
-5. Evaluate the model:
+5. Evaluate the model: (may not work atm)
     ```bash
     python src/main.py --mode evaluate
 
@@ -60,16 +60,16 @@ This approach ensures that the chosen landing point is both safe and strategical
     ```bash
     python src/main.py --mode inference
 
-8. Also you can use console arguments for every mode if needed:
+8. Also you can use console arguments for every mode if needed. Default values:
    ```bash
-   --model_path models/checkpoint.pt
-   --num_epochs 200
-   --batch_size 25
-   --early_stopping_patience 20
-   --num_workers 4
-   --zone_type marker
-   --view_mode bottom
-   --num_points 30
+   --model_path = models/final_model.pt
+   --num_epochs = 200
+   --batch_size = 10
+   --early_stopping_patience = 20
+   --num_workers = 4
+   --zone_type = marker
+   --view_mode = bottom
+   --num_points = 30
 
 ## Datasets
 The datasets used for this project are:
@@ -77,7 +77,8 @@ The datasets used for this project are:
 URL: https://datasetninja.com/semantic-drone.
 - **Swiss Drone and Okutama Drone Datasets**. Consists of 191 aerial drone images.
 URL: https://www.kaggle.com/datasets/aletbm/swiss-drone-and-okutama-drone-datasets
-
+- **Aerial Semantic Segmentation (Aeroscapes)**. Consists of 3269 aerial drone images. (need reviewing class mapping)
+URL: https://www.kaggle.com/datasets/kooaslansefat/uav-segmentation-aeroscapes
 
 ## Results
 ![Figure_1](https://github.com/user-attachments/assets/70f27202-4cc8-4397-8c6f-7e165a4f6799)

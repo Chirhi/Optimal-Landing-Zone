@@ -1,23 +1,25 @@
-import torch
 import os
+import torch
 import sys
 from pathlib import Path
+import torch.optim as optim
+import random
+import numpy as np
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.amp import GradScaler
 from train import train_model
 from eval import evaluate_model, plot_predictions
 from model import initialize_model, load_existing_model
 from utils import (
     gc_collect, 
-    MultiDatasetLoader, 
     plot_loss, 
-    ImageResizer, 
-    measure_inference_time, 
+    measure_inference_time
 )
-from config import parse_arguments, load_config
+from image_resizer import ImageResizer
+from multidataset_loader import MultiDatasetLoader
+from config import parse_arguments, load_config, filter_datasets
 from early_stopping import EarlyStopping
-from optimal_point import plot_furthest_points
-import torch.optim as optim
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.amp import GradScaler
+from optimal_point import plot_furthest_points, process_images_for_points
 
 def main():
     """
@@ -27,13 +29,29 @@ def main():
     - 'train': This mode trains a deep learning model on a combined dataset of images and their corresponding masks.
     - 'evaluate': This mode evaluates the performance of a trained model on a test dataset and plots the results.
     - 'points': This mode runs a point-finding algorithm on a test dataset using a trained model.
+    - 'inference': This mode measures the inference time of a trained model.
     """
 
+    # os.environ['TORCH_USE_CUDA_DSA'] = '1'
+    # os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+    # print("TORCH_USE_CUDA_DSA:", os.getenv("TORCH_USE_CUDA_DSA"))
+    # print("CUDA_LAUNCH_BLOCKING:", os.getenv("CUDA_LAUNCH_BLOCKING"))
+    
     # Define the project root directory
     PROJECT_ROOT = Path(__file__).parent.parent
     sys.path.append(str(PROJECT_ROOT / 'src'))
 
+    # Load configuration
     config = load_config(PROJECT_ROOT)
+
+    # Set random seeds
+    random.seed(config['seed'])
+    np.random.seed(config['seed'])
+    torch.manual_seed(config['seed'])
+    torch.cuda.manual_seed(config['seed'])
+
+    # Filter datasets for empty datasets
+    config['datasets'] = filter_datasets(config['datasets'])
 
     # Parse command-line arguments
     args, config = parse_arguments(config)
@@ -42,7 +60,7 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = initialize_model(config, device)
 
-    # Optimizer, Scheduler, Scaler, and EarlyStopping
+    # Initialize optimizer, scheduler, and early stopping
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
@@ -64,7 +82,7 @@ def main():
         config, model, optimizer, scheduler, scaler
     )
 
-    # Early stopping
+    # Initialize early stopping
     early_stopping = EarlyStopping(
         patience=config['early_stopping_patience'], 
         verbose=True, 
@@ -82,7 +100,8 @@ def main():
     multi_loader = MultiDatasetLoader(
         config['datasets'], 
         config['batch_size'], 
-        config['num_workers']
+        config['num_workers'],
+        config['image_dimensions']
     )
     combined_loaders = multi_loader.create_combined_loaders()
 
@@ -93,7 +112,7 @@ def main():
 
     # Main workflow based on mode
     if args.mode == 'train':
-        print('Starting training...')
+        print(f"-------------------------------- \n Starting training...")
         train_model(
             model, 
             combined_train_loader, 
@@ -126,15 +145,17 @@ def main():
     # Find points based on model segmentation masks
     elif args.mode == 'points':
         print('Running point-finding algorithm...')
-        model.eval()
-        with torch.no_grad():
-            data = next(iter(combined_test_loader))
-            images = data[0]
-            images = images.to(device)
-            outputs = model(images)
-            _, preds = torch.max(outputs.data, 1)
-
-            plot_furthest_points(images.cpu(), preds.cpu(), config.get('cmap'), config['zone_type'], config['num_points'], config['view_mode'], config.get('num_samples', 1))
+        images, preds = process_images_for_points(
+            model, 
+            combined_test_loader, 
+            device, 
+            config.get('num_samples', 1)
+        )
+        plot_furthest_points(
+            images, preds, config.get('cmap'),
+            config['zone_type'], config['num_points'],
+            config['view_mode'], config.get('num_samples', 1)
+        )
     
     # Measure inference time without point-finding
     elif args.mode == 'inference':

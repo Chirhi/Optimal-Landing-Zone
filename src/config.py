@@ -1,10 +1,47 @@
 import argparse
+import glob
 import os
 import yaml
+
+def filter_datasets(datasets):
+    """
+    Filters and removes empty or non-existent datasets from the configuration list.
+
+    Args:
+        datasets (list): List of datasets from the configuration, where each element is a dictionary with dataset parameters.
+
+    Returns:
+        list: Filtered list of datasets containing only valid datasets.
+    """
+    valid_datasets = []
+    for dataset_info in datasets:
+        img_path = dataset_info['img_path']
+        mask_path = dataset_info['mask_path']
+        
+        # Check if paths exist and contain files
+        if os.path.exists(img_path) and os.path.exists(mask_path):
+            img_files = glob.glob(os.path.join(img_path, '*.jpg')) + glob.glob(os.path.join(img_path, '*.png')) + glob.glob(os.path.join(img_path, '*.jpeg'))
+            mask_files = glob.glob(os.path.join(mask_path, '*.jpg')) + glob.glob(os.path.join(mask_path, '*.png')) + glob.glob(os.path.join(mask_path, '*.jpeg'))
+
+            if img_files and mask_files:
+                valid_datasets.append(dataset_info)
+            else:
+                print(f"Skipping dataset '{dataset_info['name']}': No images or masks found.")
+        else:
+            print(f"Skipping dataset '{dataset_info['name']}': Path does not exist.")
+    
+    # Update configuration with only valid datasets
+    return valid_datasets
 
 def parse_arguments(config):
     """
     Parse command-line arguments and override config values based on mode.
+
+    Args:
+        config (dict): Configuration dictionary loaded from config.yaml.
+
+    Returns:
+        tuple: Parsed arguments and updated configuration.
     """
     parser = argparse.ArgumentParser(description="Train, Evaluate, Run Point-Finding Algorithm or Measure Inference Time")
 
@@ -39,6 +76,12 @@ def parse_arguments(config):
 def load_config(project_root):
     """
     Load the configuration from config.yaml.
+
+    Args:
+        project_root (str): Root directory of the project.
+
+    Returns:
+        dict: Updated configuration dictionary.
     """
     config_path = os.path.join(project_root, 'config', 'config.yaml')
     try:

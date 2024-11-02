@@ -134,6 +134,41 @@ def calculate_score(point, zone_size, center_coords, img_shape, dist_from_edge, 
     score = 0.4 * (1 - distance_from_reference_norm) + 0.2 * size_score + 0.4 * dist_from_edge_norm
     return score
 
+def process_images_for_points(model, test_loader, device, num_samples):
+    """
+    Processes images for finding points.
+    
+    Parameters:
+        model: Model for getting predictions
+        test_loader: Test data loader
+        device: Device for calculations (CPU/GPU)
+        num_samples: Number of samples to process
+    
+    Returns:
+        tuple: (images, preds) - processed images and their predictions
+    """
+    model.eval()
+    with torch.no_grad():
+        # Getting a random batch of images
+        random_indices = torch.randperm(len(test_loader.dataset))[:num_samples]
+        images = []
+        preds = []
+        
+        for idx in random_indices:
+            img, _ = test_loader.dataset[idx]
+            img = img.unsqueeze(0).to(device)
+            output = model(img)
+            _, pred = torch.max(output.data, 1)
+            
+            images.append(img)
+            preds.append(pred)
+        
+        # Combining all images and predictions
+        images = torch.cat(images, dim=0)
+        preds = torch.cat(preds, dim=0)
+        
+        return images.cpu(), preds.cpu()
+
 def plot_furthest_points(images, preds, cmap, zone_type='marker', num_points=30, view_mode='bottom', num_samples = 1):
     """
     Plots the furthest points in a given image based on the specified zone type.
@@ -152,11 +187,13 @@ def plot_furthest_points(images, preds, cmap, zone_type='marker', num_points=30,
 
     # Class labels for legend
     class_labels = ['Obstacles', 'Landing Zones', 'Water', 'Roads', 'Moving Objects', 'Marker']
-    legend_patches = [mpatches.Patch(color=np.array(color)/255.0, label=label) for color, label in zip(cmap, class_labels)]
+    legend_patches = [mpatches.Patch(color=np.array(color)/255.0, label=label)
+                      for color, label in zip(cmap, class_labels)]
 
     # Creating legend for the image with points
     landing_points_legend = [
-        mpatches.Patch(color='yellow', label='Landing points', alpha=0.5), mpatches.Patch(color='lime', label='Optimal point')
+        mpatches.Patch(color='yellow', label='Landing points', alpha=0.5),
+        mpatches.Patch(color='lime', label='Optimal point')
     ]
 
     with torch.no_grad():
@@ -178,11 +215,12 @@ def plot_furthest_points(images, preds, cmap, zone_type='marker', num_points=30,
                     zone_size = np.sum(mask)  # Size of the zone in pixels
                     num_zone_points = min(zone_size // 1500, num_points)  # Number of points proportional to the zone size
                     furthest_points = find_multiple_furthest_points(mask, num_zone_points)
-                    # Deleting the frame from coordinates
-                    furthest_points = [((point[0][0] - 1, point[0][1] - 1), point[1], zone_size) for point in furthest_points]
+                    furthest_points = [((point[0][0] - 1, point[0][1] - 1), point[1], zone_size) # Deleting the frame from coordinates
+                                       for point in furthest_points] 
                     all_furthest_points.extend(furthest_points)
 
-                all_furthest_points.sort(key=lambda p: calculate_score(p[0], p[2], center_coords, img_shape, p[1], view_mode))
+                all_furthest_points.sort(key=lambda p: calculate_score(
+                    p[0], p[2], center_coords, img_shape, p[1], view_mode))
                 return all_furthest_points, zone_type
 
             # Try to find points in the specified zone first
@@ -208,7 +246,7 @@ def plot_furthest_points(images, preds, cmap, zone_type='marker', num_points=30,
             fig, ax = plt.subplots(1, 3, figsize=(20, 5))
             ax[0].imshow(denormalize(image, mean, std))
 
-            # Создание цветного изображения предсказаний
+            # Creating a colored prediction image
             pred_rgb = np.zeros((*pred.shape, 3), dtype=np.uint8)
             for class_idx in range(len(cmap)):
                 pred_rgb[pred.numpy() == class_idx] = cmap[class_idx]
@@ -219,7 +257,7 @@ def plot_furthest_points(images, preds, cmap, zone_type='marker', num_points=30,
             for point, dist, _ in all_furthest_points[:-1]:
                 ax[2].scatter(point[1], point[0], c='yellow', s=20, alpha=0.6)
 
-            # Highlight the best point
+            # Highlighting the best point
             if len(all_furthest_points) > 0:
                 best_point, best_dist, _ = all_furthest_points[-1]
                 ax[2].scatter(best_point[1], best_point[0], c='lime', s=50, alpha=0.7)

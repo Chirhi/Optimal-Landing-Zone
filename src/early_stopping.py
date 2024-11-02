@@ -79,6 +79,5 @@ class EarlyStopping:
         os.makedirs('models', exist_ok=True)
 
         torch.save(state, 'models/checkpoint.pt')
-        torch.save(model.state_dict(), 'models/checkpoint_weights.pth')
 
         self.val_loss_min = val_loss

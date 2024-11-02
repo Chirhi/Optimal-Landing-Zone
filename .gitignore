@@ -3,5 +3,6 @@ __pycache__/
 .venv/
 .ipynb_checkpoints/
 *.ipynb
-DroneSemantic/
+datasets/
 .aider*
+models/
